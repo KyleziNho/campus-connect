@@ -43,6 +43,8 @@ const FavoritesDropdown = () => {
                 <img 
                   src={item.image} 
                   alt={item.name} 
+                  width={64}
+                  height={64}
                   className="w-16 h-16 object-cover rounded-md"
                 />
                 <div className="flex-1">

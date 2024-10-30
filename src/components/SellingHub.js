@@ -589,7 +589,7 @@ const [error, setError] = useState('');
               Confirm Delete
             </h2>
             <p className={`mb-6 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-              Are you sure you want to delete "{productToDelete?.name}"? This action cannot be undone.
+              Are you sure you want to delete &quot;{productToDelete?.name}&quot;? This action cannot be undone.
             </p>
             <div className="flex gap-3">
               <button

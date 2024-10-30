@@ -37,9 +37,11 @@ const ProfilePage = () => {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="relative">
-            <img
+            <Image
               src={profilePicture}
               alt="Profile"
+              width={64}
+              height={64}
               className="w-24 h-24 rounded-full object-cover"
             />
             <label htmlFor="profile-picture-upload" className="absolute bottom-0 right-0 bg-blue-500 p-1 rounded-full cursor-pointer">
