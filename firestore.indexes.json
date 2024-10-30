@@ -1,0 +1,20 @@
+{
+    "indexes": [
+      {
+        "collectionGroup": "products",
+        "queryScope": "COLLECTION",
+        "fields": [
+          { "fieldPath": "university", "order": "ASCENDING" },
+          { "fieldPath": "createdAt", "order": "DESCENDING" }
+        ]
+      },
+      {
+        "collectionGroup": "products",
+        "queryScope": "COLLECTION",
+        "fields": [
+          { "fieldPath": "sellerId", "order": "ASCENDING" },
+          { "fieldPath": "createdAt", "order": "DESCENDING" }
+        ]
+      }
+    ]
+  }

@@ -1,0 +1,37 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: Arial, Helvetica, sans-serif;
+}
+/* Add dark mode styles */
+.dark {
+  @apply bg-gray-900 text-white;
+}
+
+.light {
+  @apply bg-gray-50 text-gray-900;
+}
+
+.modal-overlay {
+  @apply fixed inset-0 bg-black bg-opacity-50 z-50;
+}
+
+.modal-content {
+  @apply fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2;
+}

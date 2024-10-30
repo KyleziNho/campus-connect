@@ -1,0 +1,30 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // User profiles
+    match /users/{email} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.token.email == email;
+    }
+    
+    // Verification codes (only accessed by Cloud Functions)
+    match /verificationCodes/{email} {
+      allow read, write: if false;
+    }
+    
+    // Products collection
+    match /products/{productId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && 
+        request.resource.data.sellerId == request.auth.uid;
+      allow update, delete: if request.auth != null && 
+        resource.data.sellerId == request.auth.uid;
+    }
+    
+    // Universities collection (public read)
+    match /universities/{universityId} {
+      allow read: if true;
+      allow write: if false;
+    }
+  }
+}

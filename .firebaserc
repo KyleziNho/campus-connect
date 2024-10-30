@@ -1,0 +1,16 @@
+{
+  "projects": {
+    "staging": "campus-connect-c56a9",
+    "default": "campus-connect-c56a9"
+  },
+  "targets": {
+    "campus-connect-c56a9": {
+      "hosting": {
+        "campus-connect": [
+          "campus-connect-c56a9"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}
