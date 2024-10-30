@@ -7,6 +7,7 @@ import { useDarkMode } from '@/context/DarkModeContext';
 import { auth } from '@/config/firebaseConfig';
 import LoginModal from './LoginModal';
 import { signOut } from 'firebase/auth';
+import Image from 'next/image';
 
 const ProfileMenu = () => {
   const router = useRouter();

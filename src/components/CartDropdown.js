@@ -3,6 +3,7 @@ import React from 'react';
 import { X, Trash2 } from 'lucide-react';
 import { useShopping } from '@/context/ShoppingContext';
 import { useDarkMode } from '@/context/DarkModeContext';
+import Image from 'next/image';
 
 const CartDropdown = () => {
   const { isDarkMode } = useDarkMode();

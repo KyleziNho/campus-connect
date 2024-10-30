@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useUser } from '@/context/UserContext';
 import { useDarkMode } from '@/context/DarkModeContext';
 import { Star, Edit, Camera, Package } from 'lucide-react';
+import Image from 'next/image';
 
 const ProfilePage = () => {
   const { user } = useUser();

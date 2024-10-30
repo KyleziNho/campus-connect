@@ -40,7 +40,7 @@ const FavoritesDropdown = () => {
                   isDarkMode ? 'bg-gray-700' : 'bg-gray-100'
                 }`}
               >
-                <img 
+                <Image
                   src={item.image} 
                   alt={item.name} 
                   width={64}

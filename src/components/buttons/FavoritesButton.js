@@ -3,6 +3,7 @@ import React from 'react';
 import { Heart } from 'lucide-react';
 import { useShopping } from '@/context/ShoppingContext';
 import { useDarkMode } from '@/context/DarkModeContext';
+import Image from 'next/image';
 
 const FavoritesButton = () => {
   const { isDarkMode } = useDarkMode();
