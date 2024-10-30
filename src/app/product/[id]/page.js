@@ -6,7 +6,7 @@ import { useDarkMode } from '@/context/DarkModeContext';
 import { useUser } from '@/context/UserContext';
 import { db } from '@/config/firebaseConfig';
 import { doc, getDoc } from 'firebase/firestore';
-import { MapPin, Message } from 'lucide-react';
+import { MessageSquare, MapPin } from 'lucide-react';
 
 export default function ProductPage({ params }) {
   const { isDarkMode } = useDarkMode();

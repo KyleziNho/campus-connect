@@ -17,7 +17,7 @@ export default function ResolutionCentrePage() {
           <AlertTriangle className="w-16 h-16 mx-auto mb-4 text-yellow-500" />
           <h2 className="text-2xl font-bold mb-4">Under Development</h2>
           <p className={`text-lg ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-            The resolution centre is currently under development. Soon you'll be able to report issues,
+            The resolution centre is currently under development. Soon you&apos;ll be able to report issues,
             track dispute resolutions, and get help with your purchases here.
           </p>
         </div>
