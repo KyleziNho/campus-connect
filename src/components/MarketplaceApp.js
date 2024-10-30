@@ -87,7 +87,8 @@ const MarketplaceApp = () => {
   const handleProductClick = (productId, e) => {
     // Don't navigate if clicking on the favorite or cart buttons
     if (!e.target.closest('button')) {
-      router.push(`/product/${productId}`);
+// In handleProductClick function
+router.push(`/product/${productId}`);
     }
   };
 

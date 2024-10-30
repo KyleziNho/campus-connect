@@ -176,3 +176,5 @@ export default function ProductPage({ params }) {
     </div>
   );
 }
+
+export const dynamic = 'force-dynamic';
