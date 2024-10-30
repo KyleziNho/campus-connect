@@ -1,46 +1,53 @@
 'use client'
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useDarkMode } from '@/context/DarkModeContext';
 import { useUser } from '@/context/UserContext';
 import { db } from '@/config/firebaseConfig';
 import { doc, getDoc } from 'firebase/firestore';
-import { MapPin, Message, Heart, Package, Ticket, Laptop, Store } from 'lucide-react';
+import { MapPin, Message } from 'lucide-react';
 
 export default function ProductPage({ params }) {
   const { isDarkMode } = useDarkMode();
   const { user } = useUser();
+  const productId = React.use(params).id;
   const [product, setProduct] = useState(null);
+  const [seller, setSeller] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showMessageModal, setShowMessageModal] = useState(false);
 
-  // Categories configuration for icons
-  const categoryIcons = {
-    clothes: Package,
-    tickets: Ticket,
-    electronics: Laptop,
-    kitchen: Store,
-    other: Package
-  };
-
   useEffect(() => {
-    const fetchProduct = async () => {
+    const fetchProductAndSeller = async () => {
       try {
-        if (!params?.id) return;
+        if (!productId) return;
         
-        const productDoc = await getDoc(doc(db, 'products', params.id));
+        const productDoc = await getDoc(doc(db, 'products', productId));
         if (productDoc.exists()) {
-          setProduct({ id: productDoc.id, ...productDoc.data() });
+          const productData = { id: productDoc.id, ...productDoc.data() };
+          setProduct(productData);
+          
+          const sellerDoc = await getDoc(doc(db, 'users', productData.userId));
+          if (sellerDoc.exists()) {
+            setSeller({ id: sellerDoc.id, ...sellerDoc.data() });
+          } else {
+            setSeller({
+              id: productData.userId,
+              displayName: productData.userName || 'Anonymous User',
+              photoURL: '/placeholder-avatar.jpg',
+              createdAt: productData.createdAt || new Date().toISOString()
+            });
+          }
         }
         setLoading(false);
       } catch (error) {
-        console.error('Error fetching product:', error);
+        console.error('Error fetching data:', error);
         setLoading(false);
       }
     };
 
-    fetchProduct();
-  }, [params?.id]);
+    fetchProductAndSeller();
+  }, [productId]);
 
   if (loading) {
     return (
@@ -58,7 +65,8 @@ export default function ProductPage({ params }) {
     );
   }
 
-  const CategoryIcon = categoryIcons[product.category] || Package;
+  const isOwnProduct = user?.uid === product.userId;
+  const profileLink = isOwnProduct ? '/profile' : `/user/${seller?.id}`;
 
   return (
     <div className={`min-h-screen ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
@@ -72,10 +80,10 @@ export default function ProductPage({ params }) {
                 alt={product.name}
                 fill
                 className="object-cover"
-                unoptimized
+                priority
               />
             </div>
-            {/* Future image gallery placeholder */}
+            {/* Image gallery */}
             <div className="grid grid-cols-4 gap-2">
               {[...Array(4)].map((_, i) => (
                 <div
@@ -91,23 +99,17 @@ export default function ProductPage({ params }) {
             <div>
               <h1 className="text-3xl font-bold">{product.name}</h1>
               <p className="text-2xl font-bold text-blue-600 mt-2">
-                £{product.price.toFixed(2)}
+                £{Number(product.price).toFixed(2)}
               </p>
             </div>
 
-            {/* Category and Collection */}
+            {/* Collection Location */}
             <div className="flex gap-4">
               <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm ${
                 isDarkMode ? 'bg-gray-800' : 'bg-gray-200'
               }`}>
-                <CategoryIcon className="w-4 h-4 mr-2" />
-                {product.category.charAt(0).toUpperCase() + product.category.slice(1)}
-              </div>
-              <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm ${
-                isDarkMode ? 'bg-gray-800' : 'bg-gray-200'
-              }`}>
                 <MapPin className="w-4 h-4 mr-2" />
-                {product.collection}
+                {product.collection || 'Collection location not specified'}
               </div>
             </div>
 
@@ -121,23 +123,26 @@ export default function ProductPage({ params }) {
 
             {/* Seller Info */}
             <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-gray-100'}`}>
-              <div className="flex items-center space-x-4">
-                {/* Seller Avatar Placeholder */}
-                <div className={`w-12 h-12 rounded-full ${isDarkMode ? 'bg-gray-700' : 'bg-gray-300'} flex items-center justify-center`}>
-                  <span className="text-lg font-bold">
-                    {product.userName?.charAt(0)?.toUpperCase() || 'U'}
-                  </span>
+              <Link href={profileLink} className="flex items-center space-x-4 hover:opacity-80 transition-opacity">
+                <div className="relative w-12 h-12">
+                  <Image
+                    src={seller?.photoURL || '/placeholder-avatar.jpg'}
+                    alt={seller?.displayName || 'Anonymous User'}
+                    fill
+                    className="rounded-full object-cover"
+                    priority
+                  />
                 </div>
                 <div>
-                  <h3 className="font-semibold">{product.userName}</h3>
+                  <h3 className="font-semibold">{seller?.displayName}</h3>
                   <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                    Member since {new Date(product.createdAt).toLocaleDateString()}
+                    Member since {new Date(seller?.createdAt).toLocaleDateString()}
                   </p>
                 </div>
-              </div>
+              </Link>
 
               {/* Message Button */}
-              {user && user.uid !== product.userId && (
+              {user && !isOwnProduct && (
                 <button
                   onClick={() => setShowMessageModal(true)}
                   className="w-full mt-4 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
@@ -150,13 +155,13 @@ export default function ProductPage({ params }) {
 
             {/* Views */}
             <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-              {product.views} views
+              {product.views || 0} views
             </div>
           </div>
         </div>
       </div>
 
-      {/* Message Modal Placeholder */}
+      {/* Message Modal */}
       {showMessageModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className={`w-full max-w-md rounded-xl ${isDarkMode ? 'bg-gray-800' : 'bg-white'} p-6`}>

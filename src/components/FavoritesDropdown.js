@@ -4,6 +4,7 @@ import { X, Heart } from 'lucide-react';
 import { useShopping } from '@/context/ShoppingContext';
 import { useDarkMode } from '@/context/DarkModeContext';
 import Image from 'next/image';
+import Link from 'next/link';
 
 const FavoritesDropdown = () => {
   const { isDarkMode } = useDarkMode();
@@ -12,50 +13,44 @@ const FavoritesDropdown = () => {
   if (!showFavorites) return null;
 
   return (
-    <div className="fixed inset-0 z-50">
-      <div 
-        className="absolute inset-0 bg-black bg-opacity-50" 
-        onClick={() => setShowFavorites(false)}
-      />
-      <div className={`absolute right-0 top-0 h-full w-80 ${
-        isDarkMode ? 'bg-gray-800' : 'bg-white'
-      } shadow-xl p-4`}>
+    <div className="fixed inset-0 z-50 flex items-start justify-end">
+      <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setShowFavorites(false)} />
+      <div className={`relative w-full max-w-sm p-4 overflow-auto max-h-[80vh] ${
+        isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900'
+      }`}>
         <div className="flex justify-between items-center mb-4">
-          <h2 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-            Favorites ({favoriteItems.length})
-          </h2>
+          <h2 className="text-lg font-semibold">Favorites ({favoriteItems.length})</h2>
           <button onClick={() => setShowFavorites(false)}>
             <X className="w-5 h-5" />
           </button>
         </div>
+
         {favoriteItems.length === 0 ? (
-          <p className={`text-center py-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-            No items in favorites
-          </p>
+          <p className="text-center py-4">No items in favorites</p>
         ) : (
-          <div className="space-y-4 max-h-[calc(100vh-250px)] overflow-y-auto">
+          <div className="space-y-4">
             {favoriteItems.map(item => (
-              <div 
-                key={item.id} 
-                className={`flex items-center gap-3 p-2 rounded-lg ${
-                  isDarkMode ? 'bg-gray-700' : 'bg-gray-100'
-                }`}
-              >
-                <Image
-                  src={item.image} 
-                  alt={item.name} 
-                  width={64}
-                  height={64}
-                  className="w-16 h-16 object-cover rounded-md"
-                />
+              <div key={item.id} className={`flex gap-4 p-3 rounded-lg ${
+                isDarkMode ? 'bg-gray-700' : 'bg-gray-50'
+              }`}>
+                <Link href={`/product/${item.id}`} className="relative w-16 h-16 flex-shrink-0">
+                  <Image
+                    src={item.imageUrl || '/placeholder-image.jpg'}
+                    alt={item.name}
+                    fill
+                    className="rounded-md object-cover"
+                  />
+                </Link>
                 <div className="flex-1">
-                  <h3 className={`font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                  <Link href={`/product/${item.id}`} className="font-medium hover:underline">
                     {item.name}
-                  </h3>
-                  <p className="text-blue-500">£{item.price.toFixed(2)}</p>
+                  </Link>
+                  <p className="text-sm text-blue-600">£{item.price.toFixed(2)}</p>
                 </div>
-                <button onClick={() => toggleFavorite(item)}>
-                  <Heart className="w-5 h-5 text-red-500 fill-current" />
+                <button onClick={() => toggleFavorite(item)} className={`p-1.5 rounded-lg transition-colors ${
+                  isDarkMode ? 'hover:bg-gray-600' : 'hover:bg-gray-200'
+                }`}>
+                  <Heart className="w-5 h-5 fill-current" />
                 </button>
               </div>
             ))}

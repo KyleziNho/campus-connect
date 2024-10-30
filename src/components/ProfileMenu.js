@@ -1,7 +1,7 @@
 'use client'
 import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { UserCircle } from 'lucide-react';
+import { UserCircle, X } from 'lucide-react';
 import { useUser } from '@/context/UserContext';
 import { useDarkMode } from '@/context/DarkModeContext';
 import { auth } from '@/config/firebaseConfig';
@@ -15,6 +15,7 @@ const ProfileMenu = () => {
   const { isDarkMode } = useDarkMode();
   const [showMenu, setShowMenu] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const menuRef = useRef(null);
 
   useEffect(() => {
@@ -36,6 +37,7 @@ const ProfileMenu = () => {
   const handleLogout = async () => {
     try {
       await signOut(auth);
+      setShowLogoutConfirm(false);
       setShowMenu(false);
     } catch (error) {
       console.error('Error signing out:', error);
@@ -55,7 +57,7 @@ const ProfileMenu = () => {
       { name: 'Purchases', action: () => router.push('/purchases') },
       { name: 'Settings', action: () => router.push('/settings') },
       { name: 'Resolution Centre', action: () => router.push('/resolution-centre') },
-      { name: 'Logout', action: handleLogout }
+      { name: 'Logout', action: () => setShowLogoutConfirm(true) }
     ];
   };
   
@@ -63,7 +65,6 @@ const ProfileMenu = () => {
 
   return (
     <div className="relative" ref={menuRef}>
-      {/* Profile Button */}
       <button
         onClick={() => setShowMenu(!showMenu)}
         className={`p-2 rounded-lg transition-colors ${
@@ -78,7 +79,6 @@ const ProfileMenu = () => {
         />
       </button>
 
-      {/* Profile Menu Dropdown */}
       {showMenu && (
         <div 
           className={`absolute right-0 mt-2 w-48 rounded-lg shadow-lg ${
@@ -91,10 +91,7 @@ const ProfileMenu = () => {
           {menuItems.map((item, index) => (
             <button
               key={index}
-              onClick={() => {
-                item.action();
-                setShowMenu(false);
-              }}
+              onClick={item.action}
               className={`w-full text-left px-4 py-2 text-sm ${
                 isDarkMode 
                   ? 'text-gray-200 hover:bg-gray-700' 
@@ -110,7 +107,41 @@ const ProfileMenu = () => {
         </div>
       )}
 
-      {/* Login Modal */}
+      {showLogoutConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className={`relative w-full max-w-sm p-6 rounded-lg ${
+            isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900'
+          }`}>
+            <button 
+              onClick={() => setShowLogoutConfirm(false)}
+              className="absolute top-4 right-4"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <h3 className="text-lg font-semibold mb-4">Confirm Logout</h3>
+            <p className="mb-6">Are you sure you want to log out?</p>
+            <div className="flex gap-4">
+              <button
+                onClick={() => setShowLogoutConfirm(false)}
+                className={`flex-1 py-2 rounded-lg ${
+                  isDarkMode 
+                    ? 'bg-gray-700 hover:bg-gray-600'
+                    : 'bg-gray-100 hover:bg-gray-200'
+                } transition-colors`}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleLogout}
+                className="flex-1 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <LoginModal 
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
