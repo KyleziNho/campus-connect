@@ -1,27 +1,44 @@
-'use client'
+'use client';
+
 import { useState, useEffect } from 'react';
 import { useUser } from '@/context/UserContext';
 import { useDarkMode } from '@/context/DarkModeContext';
 import { db, storage } from '@/config/firebaseConfig';
-import { doc, setDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import {
+  doc,
+  setDoc,
+  getDoc,
+  collection,
+  query,
+  where,
+  getDocs,
+} from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Instagram, Star, Package, School, MapPin, Edit2, X } from 'lucide-react';
+import {
+  Instagram,
+  Star,
+  Package,
+  School,
+  MapPin,
+  Edit2,
+  X,
+} from 'lucide-react';
 import imageCompression from 'browser-image-compression';
 
 export default function ProfilePage() {
   const { isDarkMode } = useDarkMode();
   const { user } = useUser();
   const [profile, setProfile] = useState(null);
-  const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [listings, setListings] = useState([]);
   const [showEditModal, setShowEditModal] = useState(false);
   const [imageFile, setImageFile] = useState(null);
   const [editForm, setEditForm] = useState({
     displayName: '',
     university: '',
-    instagram: ''
+    instagram: '',
   });
 
   useEffect(() => {
@@ -32,27 +49,37 @@ export default function ProfilePage() {
       }
 
       try {
-        // Create user document if it doesn't exist
         const userRef = doc(db, 'users', user.uid);
-        const defaultProfile = {
-          id: user.uid,
-          displayName: user.displayName || 'New User',
-          photoURL: user.photoURL || '/placeholder-avatar.jpg',
-          university: '',
-          instagram: '',
-          rating: 0,
-          ratingCount: 0,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        };
+        const userDoc = await getDoc(userRef);
 
-        await setDoc(userRef, defaultProfile, { merge: true });
-        setProfile(defaultProfile);
-        setEditForm({
-          displayName: user.displayName || '',
-          university: '',
-          instagram: ''
-        });
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          setProfile({ id: userDoc.id, ...userData });
+          setEditForm({
+            displayName: userData.displayName || user.displayName || '',
+            university: userData.university || '',
+            instagram: userData.instagram || '',
+          });
+        } else {
+          const defaultProfile = {
+            id: user.uid,
+            displayName: user.displayName || 'New User',
+            photoURL: user.photoURL || '/placeholder-avatar.jpg',
+            university: '',
+            instagram: '',
+            rating: 0,
+            ratingCount: 0,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          };
+          await setDoc(userRef, defaultProfile, { merge: true });
+          setProfile(defaultProfile);
+          setEditForm({
+            displayName: defaultProfile.displayName,
+            university: defaultProfile.university,
+            instagram: defaultProfile.instagram,
+          });
+        }
 
         // Fetch listings
         const listingsQuery = query(
@@ -60,15 +87,15 @@ export default function ProfilePage() {
           where('userId', '==', user.uid)
         );
         const listingsSnap = await getDocs(listingsQuery);
-        const listingsData = listingsSnap.docs.map(doc => ({
+        const listingsData = listingsSnap.docs.map((doc) => ({
           id: doc.id,
-          ...doc.data()
+          ...doc.data(),
         }));
         setListings(listingsData);
       } catch (error) {
         console.error('Error fetching data:', error);
       }
-      
+
       setLoading(false);
     };
 
@@ -86,11 +113,14 @@ export default function ProfilePage() {
         const options = {
           maxSizeMB: 1,
           maxWidthOrHeight: 1024,
-          useWebWorker: true
+          useWebWorker: true,
         };
         const compressedFile = await imageCompression(imageFile, options);
-        
-        const imageRef = ref(storage, `profiles/${user.uid}/${Date.now()}-${imageFile.name}`);
+
+        const imageRef = ref(
+          storage,
+          `profiles/${user.uid}/${Date.now()}-${imageFile.name}`
+        );
         const uploadResult = await uploadBytes(imageRef, compressedFile);
         photoURL = await getDownloadURL(uploadResult.ref);
       }
@@ -98,14 +128,14 @@ export default function ProfilePage() {
       const updateData = {
         ...editForm,
         photoURL,
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
 
       await setDoc(userRef, updateData, { merge: true });
 
-      setProfile(prev => ({
+      setProfile((prev) => ({
         ...prev,
-        ...updateData
+        ...updateData,
       }));
 
       setShowEditModal(false);
@@ -114,7 +144,7 @@ export default function ProfilePage() {
       console.error('Error updating profile:', error);
     }
   };
-  
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -124,10 +154,20 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className={`min-h-screen ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
+    <div
+      className={`min-h-screen ${
+        isDarkMode
+          ? 'bg-gray-900 text-white'
+          : 'bg-gray-50 text-gray-900'
+      }`}
+    >
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Profile Header */}
-        <div className={`rounded-lg p-6 ${isDarkMode ? 'bg-gray-800' : 'bg-white'} mb-8`}>
+        <div
+          className={`rounded-lg p-6 ${
+            isDarkMode ? 'bg-gray-800' : 'bg-white'
+          } mb-8`}
+        >
           <div className="flex flex-col md:flex-row items-center gap-6">
             {/* Profile Picture with Edit Button */}
             <div className="relative">
@@ -152,16 +192,18 @@ export default function ProfilePage() {
 
             {/* Profile Info */}
             <div className="flex-1 text-center md:text-left">
-              <h1 className="text-3xl font-bold mb-2">{profile?.displayName}</h1>
-              
+              <h1 className="text-3xl font-bold mb-2">
+                {profile?.displayName}
+              </h1>
+
               <div className="flex flex-wrap gap-4 justify-center md:justify-start">
                 <div className="flex items-center gap-2">
                   <School className="w-5 h-5" />
                   <span>{profile?.university || 'Add your university'}</span>
                 </div>
-                
+
                 {profile?.instagram && (
-                  <Link 
+                  <Link
                     href={`https://instagram.com/${profile.instagram}`}
                     target="_blank"
                     rel="noopener noreferrer"
@@ -174,7 +216,10 @@ export default function ProfilePage() {
 
                 <div className="flex items-center gap-2 text-yellow-500">
                   <Star className="w-5 h-5" />
-                  <span>{profile?.rating || '0'} ({profile?.ratingCount || '0'} ratings)</span>
+                  <span>
+                    {profile?.rating || '0'} (
+                    {profile?.ratingCount || '0'} ratings)
+                  </span>
                 </div>
               </div>
             </div>
@@ -185,56 +230,40 @@ export default function ProfilePage() {
         <h2 className="text-2xl font-bold mb-4">Listed Items</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
           {listings.map((product) => (
-            <div key={product.id} 
+            <div
+              key={product.id}
               className={`${
-                isDarkMode ? 'bg-gray-800 text-white' : 'bg-white'
+                isDarkMode
+                  ? 'bg-gray-800 text-white'
+                  : 'bg-white'
               } rounded-xl shadow-sm overflow-hidden transition-all duration-300 hover:shadow-md`}
             >
-              <div className="relative">
-                <div style={{ position: 'relative', width: '100%', height: '200px' }}>
-                  <Image 
-                    src={product.imageUrl || '/placeholder-image.jpg'}
-                    alt={product.name}
-                    width={500}
-                    height={300}
-                    style={{
-                      objectFit: 'cover',
-                      width: '100%',
-                      height: '100%'
-                    }}
-                    unoptimized
-                  />
-                </div>
-                
+              <div className="relative w-full h-48">
+                <Image
+                  src={product.imageUrl || '/placeholder-image.jpg'}
+                  alt={product.name}
+                  layout="fill"
+                  objectFit="cover"
+                />
                 {/* Status Badge */}
-                <div className={`absolute top-2 left-2 px-2 py-1 rounded-full text-xs font-medium ${
-                  product.status === 'active' ? 'bg-green-100 text-green-800' :
-                  product.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                  'bg-gray-100 text-gray-800'
-                }`}>
-                  {product.status.charAt(0).toUpperCase() + product.status.slice(1)}
+                <div
+                  className={`absolute top-2 left-2 px-2 py-1 rounded-full text-xs font-medium ${
+                    product.status === 'active'
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-gray-100 text-gray-800'
+                  }`}
+                >
+                  {product.status.charAt(0).toUpperCase() +
+                    product.status.slice(1)}
                 </div>
               </div>
-
               <div className="p-3">
-                <h3 className="font-medium text-sm">{product.name}</h3>
-                <div className="space-y-1">
-                  <div className="flex items-center text-xs text-gray-500">
-                    <MapPin className="w-3 h-3 mr-1" />
-                    {product.collection}
-                  </div>
-                  <div className="flex items-center text-xs text-gray-500">
-                    <Package className="w-3 h-3 mr-1" />
-                    {product.category}
-                  </div>
-                </div>
-                <div className="mt-2 flex items-center justify-between">
-                  <span className="font-semibold text-base">
-                    £{product.price.toFixed(2)}
-                  </span>
-                  <span className="text-xs text-gray-500">
-                    {product.views} views
-                  </span>
+                <h3 className="font-medium text-sm">
+                  {product.name}
+                </h3>
+                <div className="flex items-center justify-between text-sm text-gray-500">
+                  <span>£{product.price.toFixed(2)}</span>
+                  <span>{product.views} views</span>
                 </div>
               </div>
             </div>
@@ -245,66 +274,116 @@ export default function ProfilePage() {
       {/* Edit Profile Modal */}
       {showEditModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className={`w-full max-w-md rounded-xl ${isDarkMode ? 'bg-gray-800' : 'bg-white'} p-6`}>
+          <div
+            className={`w-full max-w-md rounded-xl ${
+              isDarkMode
+                ? 'bg-gray-800 text-white'
+                : 'bg-white text-gray-900'
+            } p-6`}
+          >
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold">Edit Profile</h2>
-              <button onClick={() => setShowEditModal(false)}>
+              <button
+                onClick={() => setShowEditModal(false)}
+                className="p-2"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
-
             <div className="space-y-4">
+              {/* Profile Picture Upload */}
               <div>
-                <label className="block text-sm font-medium mb-1">Profile Picture</label>
+                <label className="block text-sm font-medium mb-1">
+                  Profile Picture
+                </label>
                 <input
                   type="file"
                   accept="image/*"
-                  onChange={(e) => setImageFile(e.target.files[0])}
-                  className="w-full"
+                  onChange={(e) =>
+                    setImageFile(e.target.files[0])
+                  }
+                  className={`w-full p-2 border ${
+                    isDarkMode
+                      ? 'bg-gray-700 border-gray-600 text-white'
+                      : 'bg-white border-gray-300 text-gray-900'
+                  } rounded-lg`}
                 />
               </div>
 
+              {/* Display Name */}
               <div>
-                <label className="block text-sm font-medium mb-1">Display Name</label>
+                <label className="block text-sm font-medium mb-1">
+                  Display Name
+                </label>
                 <input
                   type="text"
                   value={editForm.displayName}
-                  onChange={(e) => setEditForm({...editForm, displayName: e.target.value})}
-                  className={`w-full rounded-lg p-2 border ${
-                    isDarkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
-                  }`}
+                  onChange={(e) =>
+                    setEditForm({
+                      ...editForm,
+                      displayName: e.target.value,
+                    })
+                  }
+                  className={`w-full p-2 border ${
+                    isDarkMode
+                      ? 'bg-gray-700 border-gray-600 text-white'
+                      : 'bg-white border-gray-300 text-gray-900'
+                  } rounded-lg`}
                 />
               </div>
 
+              {/* University */}
               <div>
-                <label className="block text-sm font-medium mb-1">University</label>
+                <label className="block text-sm font-medium mb-1">
+                  University
+                </label>
                 <input
                   type="text"
                   value={editForm.university}
-                  onChange={(e) => setEditForm({...editForm, university: e.target.value})}
-                  className={`w-full rounded-lg p-2 border ${
-                    isDarkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
-                  }`}
+                  onChange={(e) =>
+                    setEditForm({
+                      ...editForm,
+                      university: e.target.value,
+                    })
+                  }
+                  className={`w-full p-2 border ${
+                    isDarkMode
+                      ? 'bg-gray-700 border-gray-600 text-white'
+                      : 'bg-white border-gray-300 text-gray-900'
+                  } rounded-lg`}
                 />
               </div>
 
+              {/* Instagram Username */}
               <div>
-                <label className="block text-sm font-medium mb-1">Instagram Username</label>
+                <label className="block text-sm font-medium mb-1">
+                  Instagram Username
+                </label>
                 <input
                   type="text"
                   value={editForm.instagram}
-                  onChange={(e) => setEditForm({...editForm, instagram: e.target.value})}
-                  className={`w-full rounded-lg p-2 border ${
-                    isDarkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
-                  }`}
+                  onChange={(e) =>
+                    setEditForm({
+                      ...editForm,
+                      instagram: e.target.value,
+                    })
+                  }
+                  className={`w-full p-2 border ${
+                    isDarkMode
+                      ? 'bg-gray-700 border-gray-600 text-white'
+                      : 'bg-white border-gray-300 text-gray-900'
+                  } rounded-lg`}
                 />
               </div>
 
+              {/* Buttons */}
               <div className="flex gap-3 mt-6">
                 <button
                   onClick={() => setShowEditModal(false)}
                   className={`flex-1 py-2 rounded-lg ${
-                    isDarkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'
+                    isDarkMode
+                      ? 'bg-gray-700 text-white hover:bg-gray-600'
+                      : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
                   }`}
                 >
                   Cancel
