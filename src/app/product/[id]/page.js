@@ -11,7 +11,7 @@ import { MessageSquare, MapPin } from 'lucide-react';
 export default function ProductPage({ params }) {
   const { isDarkMode } = useDarkMode();
   const { user } = useUser();
-  const productId = React.use(params).id;
+  const productId = params.id;
   const [product, setProduct] = useState(null);
   const [seller, setSeller] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -147,7 +147,7 @@ export default function ProductPage({ params }) {
                   onClick={() => setShowMessageModal(true)}
                   className="w-full mt-4 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
                 >
-                  <Message className="w-5 h-5" />
+                  <MessageSquare className="w-5 h-5" />
                   Message Seller
                 </button>
               )}
