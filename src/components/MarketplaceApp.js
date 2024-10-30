@@ -23,7 +23,17 @@ const MarketplaceApp = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showLoginAlert, setShowLoginAlert] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
+
+  useEffect(() => {
+    if (showLoginAlert) {
+      const timer = setTimeout(() => {
+        setShowLoginAlert(false);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [showLoginAlert]);
 
   // Categories definition
   const categories = [
@@ -73,12 +83,29 @@ const MarketplaceApp = () => {
       product.description?.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
+  // Handle product click to navigate to product page
+  const handleProductClick = (productId, e) => {
+    // Don't navigate if clicking on the favorite or cart buttons
+    if (!e.target.closest('button')) {
+      router.push(`/product/${productId}`);
+    }
+  };
+
   return (
     <div className={`min-h-screen transition-colors ${
       isDarkMode ? 'bg-gray-900' : 'bg-gray-50'
     }`}>
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Login Alert */}
+        {showLoginAlert && (
+          <div className="fixed top-4 right-4 z-50 animate-fade-in">
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative shadow-md">
+              <span className="block sm:inline">You must be logged in to sell items.</span>
+            </div>
+          </div>
+        )}
+
         {/* Search and Categories */}
         <div className="mb-6">
           <div className="flex flex-col lg:flex-row lg:items-center lg:space-x-6">
@@ -135,66 +162,68 @@ const MarketplaceApp = () => {
               const isInCart = cartItems.some(item => item.id === product.id);
 
               return (
-                <Link href={`/product/${product.id}`} key={product.id}>
-                  <div className="transform transition-all duration-300 hover:scale-[1.02] cursor-pointer">
-                    <div className={`h-full rounded-lg shadow-sm transition-all overflow-hidden ${
-                      isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'
-                    } hover:shadow-lg`}>
-                      <div className="relative">
-                        <Image 
-                          src={product.imageUrl || '/placeholder-image.jpg'}
-                          alt={product.name}
-                          width={500}
-                          height={300}
-                          className="w-full h-48 object-cover"
-                          unoptimized
-                        />
-                        <button 
+                <div 
+                  key={product.id}
+                  onClick={(e) => handleProductClick(product.id, e)}
+                  className="transform transition-all duration-300 hover:scale-[1.02] cursor-pointer"
+                >
+                  <div className={`h-full rounded-lg shadow-sm transition-all overflow-hidden ${
+                    isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'
+                  } hover:shadow-lg`}>
+                    <div className="relative">
+                      <Image 
+                        src={product.imageUrl || '/placeholder-image.jpg'}
+                        alt={product.name}
+                        width={500}
+                        height={300}
+                        className="w-full h-48 object-cover"
+                        unoptimized
+                      />
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleFavorite(product);
+                        }}
+                        className={`absolute top-2 right-2 p-1.5 rounded-full backdrop-blur-sm shadow-md transition-colors ${
+                          isDarkMode ? 'bg-gray-800/90 hover:bg-gray-700' : 'bg-white/90 hover:bg-white'
+                        }`}
+                      >
+                        <Heart className={`w-4 h-4 transition-colors ${
+                          favoriteItems.some(item => item.id === product.id) ? 'text-red-500 fill-current' : ''
+                        }`} />
+                      </button>
+                    </div>
+                    <div className="p-2.5">
+                      <h3 className="font-medium text-sm mb-1.5">{product.name}</h3>
+                      <div className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium mb-1.5 ${
+                        product.collection === 'Campus' ? 'bg-blue-100 text-blue-800' :
+                        product.collection === 'City' ? 'bg-purple-100 text-purple-800' :
+                        'bg-green-100 text-green-800'
+                      }`}>
+                        <MapPin className="w-3 h-3 mr-1" />
+                        {product.collection}
+                      </div>
+                      <div className="mt-1.5 flex items-center justify-between">
+                        <span className="text-base font-semibold">
+                          £{product.price.toFixed(2)}
+                        </span>
+                        <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            toggleFavorite(product);
+                            isInCart ? removeFromCart(product.id) : addToCart(product);
                           }}
-                          className={`absolute top-2 right-2 p-1.5 rounded-full backdrop-blur-sm shadow-md transition-colors ${
-                            isDarkMode ? 'bg-gray-800/90 hover:bg-gray-700' : 'bg-white/90 hover:bg-white'
+                          className={`px-2.5 py-1 text-sm rounded-lg transition-colors ${
+                            isInCart 
+                              ? 'bg-green-600 hover:bg-green-700 text-white' 
+                              : 'bg-blue-600 hover:bg-blue-700 text-white'
                           }`}
                         >
-                          <Heart className={`w-4 h-4 transition-colors ${
-                            favoriteItems.some(item => item.id === product.id) ? 'text-red-500 fill-current' : ''
-                          }`} />
+                          {isInCart ? 'In basket' : 'Add to Cart'}
                         </button>
-                      </div>
-                      <div className="p-2.5">
-                        <h3 className="font-medium text-sm mb-1.5">{product.name}</h3>
-                        <div className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium mb-1.5 ${
-                          product.collection === 'Campus' ? 'bg-blue-100 text-blue-800' :
-                          product.collection === 'City' ? 'bg-purple-100 text-purple-800' :
-                          'bg-green-100 text-green-800'
-                        }`}>
-                          <MapPin className="w-3 h-3 mr-1" />
-                          {product.collection}
-                        </div>
-                        <div className="mt-1.5 flex items-center justify-between">
-                          <span className="text-base font-semibold">
-                            £{product.price.toFixed(2)}
-                          </span>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              isInCart ? removeFromCart(product.id) : addToCart(product);
-                            }}
-                            className={`px-2.5 py-1 text-sm rounded-lg transition-colors ${
-                              isInCart 
-                                ? 'bg-green-600 hover:bg-green-700 text-white' 
-                                : 'bg-blue-600 hover:bg-blue-700 text-white'
-                            }`}
-                          >
-                            {isInCart ? 'In basket' : 'Add to Cart'}
-                          </button>
-                        </div>
                       </div>
                     </div>
                   </div>
-                </Link>
+                </div>
               );
             })}
           </div>
@@ -206,7 +235,7 @@ const MarketplaceApp = () => {
             if (user) {
               router.push('/selling-hub');
             } else {
-              setShowLoginModal(true);
+              setShowLoginAlert(true);
             }
           }}
           className="fixed bottom-6 right-6 px-6 py-3 bg-blue-600 text-white rounded-lg shadow-lg hover:bg-blue-700 transition-colors font-medium flex items-center gap-2"
