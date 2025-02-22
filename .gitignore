@@ -173,3 +173,5 @@ dist
 .yarn/install-state.gz
 .pnp.*
 >>>>>>> 8de1f492be9564f74a4cb9f9aab10013711e969e
+*firebase-adminsdk*.json
+campus-connect-c56a9-firebase-adminsdk-q5s6w-215b71dd91.json

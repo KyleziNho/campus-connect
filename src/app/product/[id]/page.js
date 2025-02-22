@@ -7,6 +7,7 @@ import { useUser } from '@/context/UserContext';
 import { db } from '@/config/firebaseConfig';
 import { doc, getDoc } from 'firebase/firestore';
 import { MessageSquare, MapPin } from 'lucide-react';
+import RecommendedProducts from '@/components/RecommendedProducts';
 
 export default function ProductPage({ params }) {
   const { isDarkMode } = useDarkMode();
@@ -70,7 +71,7 @@ export default function ProductPage({ params }) {
 
   return (
     <div className={`min-h-screen ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-2xl mx-auto p-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Product Image */}
           <div className="space-y-4">
@@ -159,6 +160,11 @@ export default function ProductPage({ params }) {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Add similar products section */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <RecommendedProducts currentProductId={params.id} />
       </div>
 
       {/* Message Modal */}

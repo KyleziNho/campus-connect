@@ -10,6 +10,7 @@ import { auth, db } from '@/config/firebaseConfig';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import Image from 'next/image';
 import LoginModal from './LoginModal';
+import RecommendedProducts from './RecommendedProducts';
 
 const MarketplaceApp = () => {
   const { isDarkMode } = useDarkMode();
@@ -87,8 +88,7 @@ const MarketplaceApp = () => {
   const handleProductClick = (productId, e) => {
     // Don't navigate if clicking on the favorite or cart buttons
     if (!e.target.closest('button')) {
-// In handleProductClick function
-router.push(`/product/${productId}`);
+      router.push(`/product/${productId}`);
     }
   };
 
@@ -152,6 +152,9 @@ router.push(`/product/${productId}`);
           </div>
         </div>
         
+        {/* Recommended Products */}
+        <RecommendedProducts />
+
         {/* Product Grid */}
         {!loading && (
           <div className={`grid gap-4 transition-all duration-300 ${
