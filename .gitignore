@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
@@ -30,8 +29,12 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# env files (can opt-in for commiting if needed)
-.env*
+# env files (can opt-in for committing if needed)
+.env
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
 
 # vercel
 .vercel
@@ -41,7 +44,7 @@ yarn-error.log*
 next-env.d.ts
 sendgrid.env
 sendgrid.env
-=======
+
 # Logs
 logs
 *.log
@@ -116,13 +119,6 @@ web_modules/
 # Yarn Integrity file
 .yarn-integrity
 
-# dotenv environment variable files
-.env
-.env.development.local
-.env.test.local
-.env.production.local
-.env.local
-
 # parcel-bundler cache (https://parceljs.org/)
 .cache
 .parcel-cache
@@ -172,6 +168,6 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
->>>>>>> 8de1f492be9564f74a4cb9f9aab10013711e969e
+
 *firebase-adminsdk*.json
 campus-connect-c56a9-firebase-adminsdk-q5s6w-215b71dd91.json
