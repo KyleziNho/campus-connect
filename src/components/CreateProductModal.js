@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { X, Package, Ticket, Laptop, Store } from 'lucide-react';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import imageCompression from 'browser-image-compression';
+import { classifyImage } from '@/utils/imageClassification';
 
 const defaultCategories = [
   { id: 'clothes', icon: Package, label: 'Clothes' },
@@ -23,6 +24,8 @@ const CreateProductModal = ({
   categories = defaultCategories
 }) => {
   const [compressionStatus, setCompressionStatus] = useState('');
+  const [classificationResult, setClassificationResult] = useState(null);
+  const [isClassifying, setIsClassifying] = useState(false);
 
   const handleImageChangeWithCompression = async (e) => {
     const file = e.target.files[0];
@@ -30,25 +33,36 @@ const CreateProductModal = ({
 
     try {
       setCompressionStatus('Compressing image...');
+      setIsClassifying(true);
 
       const options = {
-        maxSizeMB: 1, // Max file size in MB
-        maxWidthOrHeight: 1024, // Max width/height in pixels
+        maxSizeMB: 1,
+        maxWidthOrHeight: 1024,
         useWebWorker: true,
-        fileType: 'image/jpeg' // Convert all images to JPEG
+        fileType: 'image/jpeg'
       };
 
       const compressedFile = await imageCompression(file, options);
       
-      // Log compression results
-      console.log('Original file size:', file.size / 1024 / 1024, 'MB');
-      console.log('Compressed file size:', compressedFile.size / 1024 / 1024, 'MB');
+      // Classify the image
+      const classification = await classifyImage(compressedFile);
+      setClassificationResult(classification);
+      
+      // Auto-set the category if confidence is high enough
+      if (classification.confidence > 0.7) {
+        setNewProduct(prev => ({
+          ...prev,
+          category: classification.category
+        }));
+      }
       
       setCompressionStatus('');
+      setIsClassifying(false);
       handleImageChange({ target: { files: [compressedFile] } });
     } catch (error) {
-      console.error('Error compressing image:', error);
-      setCompressionStatus('Error compressing image. Please try again.');
+      console.error('Error processing image:', error);
+      setCompressionStatus('Error processing image. Please try again.');
+      setIsClassifying(false);
     }
   };
 
@@ -76,14 +90,21 @@ const CreateProductModal = ({
               className={`w-full ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
               required
             />
-            {compressionStatus && (
+            {(compressionStatus || isClassifying) && (
               <p className={`text-sm mt-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                {compressionStatus}
+                {compressionStatus || 'Analyzing image...'}
               </p>
+            )}
+            
+            {/* Show classification results */}
+            {classificationResult && !classificationResult.error && (
+              <div className={`mt-2 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                <p>Suggested category: {classificationResult.category}</p>
+                <p>Confidence: {Math.round(classificationResult.confidence * 100)}%</p>
+              </div>
             )}
           </div>
 
-          {/* Rest of the form remains the same */}
           <div>
             <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
               Category *

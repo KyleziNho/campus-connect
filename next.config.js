@@ -23,6 +23,10 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'placehold.co'
       }
+    ],
+    domains: [
+      'localhost',
+      'images.unsplash.com',
     ]
   },
   trailingSlash: false

@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@huggingface/inference": "^2.8.1",
     "@sendgrid/mail": "^8.1.4",
     "browser-image-compression": "^2.0.2",
     "dotenv": "^16.4.7",
