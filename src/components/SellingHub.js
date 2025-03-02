@@ -95,10 +95,12 @@ const SellingHub = () => {
     price: '',
     collection: 'Campus',
     category: 'clothes',
+    color: 'unknown',
     description: '',
     status: 'active'
   });
   const [imageFile, setImageFile] = useState(null);
+  const [imageUrl, setImageUrl] = useState(null);
   const categories = [
     { id: 'clothes', icon: Package, label: 'Clothes' },
     { id: 'tickets', icon: Ticket, label: 'Tickets' },
@@ -208,6 +210,10 @@ const SellingHub = () => {
     }
   };
 
+  const handleImageUrl = (url) => {
+    setImageUrl(url);
+  };
+
   const handleCreateProduct = async (e) => {
     e.preventDefault();
     if (!user) return;
@@ -215,21 +221,31 @@ const SellingHub = () => {
     setIsUploading(true);
     try {
       let imageUrl = '';
+      
       if (imageFile) {
+        // Upload file
         const imageRef = ref(storage, `products/${user.uid}/${Date.now()}-${imageFile.name}`);
         const uploadResult = await uploadBytes(imageRef, imageFile);
         imageUrl = await getDownloadURL(uploadResult.ref);
+      } else if (imageUrl) {
+        // Use direct URL
+        imageUrl = imageUrl;
       }
 
       const productData = {
-        ...newProduct,
+        name: newProduct.name,
         price: parseFloat(newProduct.price),
+        category: newProduct.category,
+        color: newProduct.color || 'unknown',
+        collection: newProduct.collection,
+        description: newProduct.description,
+        imageUrl,
         userId: user.uid,
         userEmail: user.email,
-        userName: user.displayName,
-        imageUrl,
-        createdAt: new Date().toISOString(),
-        views: 0
+        userName: user.displayName || user.email.split('@')[0],
+        status: 'active',
+        views: 0,
+        createdAt: new Date().toISOString()
       };
 
       await addDoc(collection(db, 'products'), productData);
@@ -239,10 +255,12 @@ const SellingHub = () => {
         price: '',
         collection: 'Campus',
         category: 'clothes',
+        color: 'unknown',
         description: '',
         status: 'active'
       });
       setImageFile(null);
+      setImageUrl(null);
     } catch (error) {
       console.error('Error creating product:', error);
     } finally {
@@ -335,49 +353,88 @@ const [error, setError] = useState('');
                 isDarkMode ? 'bg-gray-800 text-white' : 'bg-white'
               } rounded-xl shadow-sm overflow-hidden transition-all duration-300 hover:shadow-md`}
             >
-              <div className="relative">
-                <div style={{ position: 'relative', width: '100%', height: '200px' }}>
-                  <Image 
-                    src={product.imageUrl || '/placeholder-image.jpg'}
+              <div className="flex flex-col h-full">
+                <div className="relative w-full h-32 bg-gray-100 rounded-t-lg overflow-hidden">
+                  <Image
+                    src={product.imageUrl || '/placeholder.png'}
                     alt={product.name}
-                    width={500}
-                    height={300}
-                    style={{
-                      objectFit: 'cover',
-                      width: '100%',
-                      height: '100%'
-                    }}
-                    unoptimized
+                    fill
+                    className="object-cover"
                   />
                 </div>
-                
-                {/* Options Button */}
-                <div className="absolute top-2 right-2">
-                  <button
-                    onClick={() => setShowOptionsFor(showOptionsFor === product.id ? null : product.id)}
-                    className={`p-1 rounded-full ${
-                      isDarkMode ? 'bg-gray-800/90' : 'bg-white/90'
-                    } backdrop-blur-sm shadow-md hover:bg-opacity-100 transition-colors`}
-                  >
-                    <MoreVertical className="w-4 h-4" />
-                  </button>
+                <div className="p-3 flex-grow">
+                  <h3 className="font-medium text-sm mb-1 truncate">{product.name}</h3>
                   
-                  {showOptionsFor === product.id && (
-                    <div className={`absolute right-0 mt-1 w-36 rounded-lg shadow-lg overflow-hidden z-10 ${
-                      isDarkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white'
+                  {/* Display color and category tags */}
+                  <div className="flex flex-wrap gap-1 mb-1">
+                    {product.color && product.color !== 'unknown' && (
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                        product.color === 'red' ? 'bg-red-100 text-red-800 border border-red-300' :
+                        product.color === 'blue' ? 'bg-blue-100 text-blue-800 border border-blue-300' :
+                        product.color === 'green' ? 'bg-green-100 text-green-800 border border-green-300' :
+                        product.color === 'yellow' ? 'bg-yellow-100 text-yellow-800 border border-yellow-300' :
+                        product.color === 'orange' ? 'bg-orange-100 text-orange-800 border border-orange-300' :
+                        product.color === 'purple' ? 'bg-purple-100 text-purple-800 border border-purple-300' :
+                        product.color === 'pink' ? 'bg-pink-100 text-pink-800 border border-pink-300' :
+                        product.color === 'black' ? 'bg-gray-800 text-white' :
+                        product.color === 'white' ? 'bg-white text-gray-800 border border-gray-300' :
+                        product.color === 'gray' ? 'bg-gray-200 text-gray-800 border border-gray-400' :
+                        product.color === 'brown' ? 'bg-amber-700 text-white' :
+                        product.color === 'beige' ? 'bg-amber-100 text-amber-800 border border-amber-300' :
+                        product.color === 'multicolor' ? 'bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 text-white' :
+                        product.color === 'patterned' ? 'bg-gray-200 text-gray-800 border border-gray-400' :
+                        'bg-gray-100 text-gray-800 border border-gray-300'
+                      }`}>
+                        {product.color}
+                      </span>
+                    )}
+                    
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                      product.category === 'shirt' ? 'bg-indigo-100 text-indigo-800' :
+                      product.category === 'tshirt' ? 'bg-sky-100 text-sky-800' :
+                      product.category === 'blouse' ? 'bg-fuchsia-100 text-fuchsia-800' :
+                      product.category === 'hoodie' ? 'bg-blue-100 text-blue-800' :
+                      product.category === 'sweatshirt' ? 'bg-blue-100 text-blue-800' :
+                      product.category === 'jacket' ? 'bg-cyan-100 text-cyan-800' :
+                      product.category === 'blazer' ? 'bg-slate-100 text-slate-800' :
+                      product.category === 'pants' ? 'bg-emerald-100 text-emerald-800' :
+                      product.category === 'jeans' ? 'bg-blue-100 text-blue-800' :
+                      product.category === 'shorts' ? 'bg-lime-100 text-lime-800' :
+                      product.category === 'skirt' ? 'bg-pink-100 text-pink-800' :
+                      product.category === 'dress' ? 'bg-violet-100 text-violet-800' :
+                      product.category === 'shoes' ? 'bg-amber-100 text-amber-800' :
+                      product.category === 'boots' ? 'bg-amber-100 text-amber-800' :
+                      product.category === 'sandals' ? 'bg-yellow-100 text-yellow-800' :
+                      product.category === 'accessories' ? 'bg-rose-100 text-rose-800' :
+                      product.category === 'bag' ? 'bg-rose-100 text-rose-800' :
+                      product.category === 'hat' ? 'bg-rose-100 text-rose-800' :
+                      product.category === 'jewelry' ? 'bg-rose-100 text-rose-800' :
+                      product.category === 'scarf' ? 'bg-rose-100 text-rose-800' :
+                      product.category === 'electronics' ? 'bg-gray-200 text-gray-800' :
+                      product.category === 'kitchen' ? 'bg-green-100 text-green-800' :
+                      product.category === 'tickets' ? 'bg-purple-100 text-purple-800' :
+                      'bg-gray-100 text-gray-800'
                     }`}>
+                      {product.category}
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center text-xs text-gray-500 mb-2">
+                    <MapPin className="w-3 h-3 mr-1" />
+                    {product.collection}
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="font-semibold">£{product.price.toFixed(2)}</span>
+                    <div className="flex">
                       <button
                         onClick={() => {
                           setEditingProduct(product);
                           setShowEditModal(true);
                           setShowOptionsFor(null);
                         }}
-                        className={`w-full flex items-center px-4 py-2 text-sm ${
-                          isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'
-                        }`}
+                        className="p-1.5 text-gray-500 hover:text-blue-600"
                       >
-                        <Edit2 className="w-4 h-4 mr-2" />
-                        Edit Post
+                        <Edit2 className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => {
@@ -385,46 +442,14 @@ const [error, setError] = useState('');
                           setShowDeleteConfirm(true);
                           setShowOptionsFor(null);
                         }}
-                        className="w-full flex items-center px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                        className="p-1.5 text-gray-500 hover:text-red-600"
                       >
-                        <Trash2 className="w-4 h-4 mr-2" />
-                        Delete Post
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
-                  )}
-                </div>
-
-                {/* Status Badge */}
-                <div className={`absolute top-2 left-2 px-2 py-1 rounded-full text-xs font-medium ${
-                  product.status === 'active' ? 'bg-green-100 text-green-800' :
-                  product.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                  'bg-gray-100 text-gray-800'
-                }`}>
-                  {product.status.charAt(0).toUpperCase() + product.status.slice(1)}
+                  </div>
                 </div>
               </div>
-
-              <div className="p-3">
-  <h3 className="font-medium text-sm">{product.name}</h3>
-            <div className="space-y-1">
-              <div className="flex items-center text-xs text-gray-500">
-                <MapPin className="w-3 h-3 mr-1" />
-                {product.collection}
-              </div>
-              <div className="flex items-center text-xs text-gray-500">
-                <Package className="w-3 h-3 mr-1" />
-                {product.category}
-              </div>
-            </div>
-            <div className="mt-2 flex items-center justify-between">
-              <span className="font-semibold text-base">
-                £{product.price.toFixed(2)}
-              </span>
-              <span className="text-xs text-gray-500">
-                {product.views} views
-              </span>
-            </div>
-          </div>
             </div>
           ))}
         </div>
@@ -439,6 +464,7 @@ const [error, setError] = useState('');
           newProduct={newProduct}
           setNewProduct={setNewProduct}
           handleImageChange={handleImageChange}
+          handleImageUrl={handleImageUrl}
           isUploading={isUploading}
           categories={categories}
         />

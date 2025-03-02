@@ -199,6 +199,30 @@ const MarketplaceApp = () => {
                     </div>
                     <div className="p-2.5">
                       <h3 className="font-medium text-sm mb-1.5">{product.name}</h3>
+                      
+                      {/* Display color if available - with enhanced styling */}
+                      {product.color && product.color !== 'unknown' && (
+                        <div className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium mr-1.5 mb-1 ${
+                          product.color === 'red' ? 'bg-red-100 text-red-800 border border-red-300' :
+                          product.color === 'blue' ? 'bg-blue-100 text-blue-800 border border-blue-300' :
+                          product.color === 'green' ? 'bg-green-100 text-green-800 border border-green-300' :
+                          product.color === 'yellow' ? 'bg-yellow-100 text-yellow-800 border border-yellow-300' :
+                          product.color === 'orange' ? 'bg-orange-100 text-orange-800 border border-orange-300' :
+                          product.color === 'purple' ? 'bg-purple-100 text-purple-800 border border-purple-300' :
+                          product.color === 'pink' ? 'bg-pink-100 text-pink-800 border border-pink-300' :
+                          product.color === 'black' ? 'bg-gray-800 text-white' :
+                          product.color === 'white' ? 'bg-white text-gray-800 border border-gray-300' :
+                          product.color === 'gray' ? 'bg-gray-200 text-gray-800 border border-gray-400' :
+                          product.color === 'brown' ? 'bg-amber-700 text-white' :
+                          product.color === 'beige' ? 'bg-amber-100 text-amber-800 border border-amber-300' :
+                          product.color === 'multicolor' ? 'bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 text-white' :
+                          product.color === 'patterned' ? 'bg-gray-200 text-gray-800 border border-gray-400' :
+                          'bg-gray-100 text-gray-800 border border-gray-300'
+                        }`}>
+                          <span className="capitalize">{product.color}</span>
+                        </div>
+                      )}
+                      
                       <div className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium mb-1.5 ${
                         product.collection === 'Campus' ? 'bg-blue-100 text-blue-800' :
                         product.collection === 'City' ? 'bg-purple-100 text-purple-800' :
@@ -207,6 +231,24 @@ const MarketplaceApp = () => {
                         <MapPin className="w-3 h-3 mr-1" />
                         {product.collection}
                       </div>
+                      
+                      {/* Display category with icon */}
+                      <div className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium mb-1.5 ml-1 ${
+                        product.category === 'shirt' ? 'bg-indigo-100 text-indigo-800' :
+                        product.category === 'hoodie' ? 'bg-blue-100 text-blue-800' :
+                        product.category === 'jacket' ? 'bg-cyan-100 text-cyan-800' :
+                        product.category === 'pants' ? 'bg-emerald-100 text-emerald-800' :
+                        product.category === 'dress' ? 'bg-violet-100 text-violet-800' :
+                        product.category === 'shoes' ? 'bg-amber-100 text-amber-800' :
+                        product.category === 'accessories' ? 'bg-rose-100 text-rose-800' :
+                        product.category === 'electronics' ? 'bg-gray-200 text-gray-800' :
+                        product.category === 'kitchen' ? 'bg-green-100 text-green-800' :
+                        product.category === 'tickets' ? 'bg-purple-100 text-purple-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {product.category}
+                      </div>
+                      
                       <div className="mt-1.5 flex items-center justify-between">
                         <span className="text-base font-semibold">
                           £{product.price.toFixed(2)}
